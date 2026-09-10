@@ -1,0 +1,62 @@
+[
+  {
+    "slug": "",
+    "name": "accueil",
+    "title": "Toulouse - BOS & BOP - Orientation scolaire et professionnelle à Toulouse",
+    "metaDescription": "L’acronyme de Bilan d’Orientation Scolaire et Bilan d’Orientation Professionnel. Un concept à 360°, sérieux mais qui ne se prend pas au sérieux, pour faire de l’orientation un moment aussi agréable qu’utile.",
+    "metaKeywords": "orientation, scolaire, professionnelle, toulouse",
+    "breadcrumbLabel": "Accueil",
+    "sharePath": "/",
+    "bodyClass": "bootstrap bd-body-1 bd-homepage bd-pagebackground-49 bd-margins"
+  },
+  {
+    "slug": "bilan-orientation-scolaire-professionnel-toulouse",
+    "name": "bilan-orientation-scolaire-professionnel-toulouse",
+    "title": "Histoire - BOS & BOP - Orientation scolaire et professionnelle à Toulouse",
+    "metaDescription": "L’acronyme de Bilan d’Orientation Scolaire et Bilan d’Orientation Professionnel. Un concept à 360°, sérieux mais qui ne se prend pas au sérieux, pour faire de l’orientation un moment aussi agréable qu’utile.",
+    "metaKeywords": "orientation, scolaire, professionnelle, toulouse",
+    "breadcrumbLabel": "BOS & BOP",
+    "sharePath": "/bilan-orientation-scolaire-professionnel-toulouse.html",
+    "bodyClass": "bootstrap bd-body-7 bd-pagebackground-104 bd-margins"
+  },
+  {
+    "slug": "prestations-orientation-scolaire-professionnel-toulouse",
+    "name": "prestations-orientation-scolaire-professionnel-toulouse",
+    "title": "Prestation Orientation - BOS & BOP - Orientation scolaire et professionnelle à Toulouse",
+    "metaDescription": "Orientation, accompagnement individuel pour les jeunes, accompagnement pour les adultes, Training",
+    "metaKeywords": "Orientation, accompagnement, jeunes, adultes, training, toulouse",
+    "breadcrumbLabel": "Prestation Orientation",
+    "sharePath": "/prestations-orientation-scolaire-professionnel-toulouse.html",
+    "bodyClass": "bootstrap bd-body-7 bd-pagebackground-104 bd-margins"
+  },
+  {
+    "slug": "recrutement",
+    "name": "recrutement",
+    "title": "Prestation Recrutement - BOS & BOP - Orientation scolaire et professionnelle à Toulouse",
+    "metaDescription": "",
+    "metaKeywords": "",
+    "breadcrumbLabel": "Prestation Recrutement",
+    "sharePath": "/recrutement.html",
+    "bodyClass": "bootstrap bd-body-7 bd-pagebackground-104 bd-margins"
+  },
+  {
+    "slug": "contact-orientation-scolaire-professionnel-toulouse",
+    "name": "contact-orientation-scolaire-professionnel-toulouse",
+    "title": "Contact - BOS & BOP - Orientation scolaire et professionnelle à Toulouse",
+    "metaDescription": "Pour prendre rendez-vous, contactez Valérie Calvet au 06.48.69.20.36 \nou par mail via le formulaire de contact.",
+    "metaKeywords": "orientation,scolaire,professionnel,contact,toulouse",
+    "breadcrumbLabel": "Contact",
+    "sharePath": "/contact-orientation-scolaire-professionnel-toulouse.html",
+    "bodyClass": "bootstrap bd-body-7 bd-pagebackground-104 bd-margins"
+  },
+  {
+    "slug": "mentions-legales",
+    "name": "mentions-legales",
+    "title": "Mentions légales - BOS & BOP - Orientation scolaire et professionnelle à Toulouse",
+    "metaDescription": "",
+    "metaKeywords": "",
+    "breadcrumbLabel": "Mentions légales",
+    "sharePath": "/contact-2.html",
+    "bodyClass": "bootstrap bd-body-7 bd-pagebackground-104 bd-margins"
+  }
+]

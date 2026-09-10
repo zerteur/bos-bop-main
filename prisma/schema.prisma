@@ -1,0 +1,142 @@
+// Schéma de données du site BOS & BOP
+// Base SQLite : simple à héberger, sauvegarde = copie d'un fichier.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Administration
+// ---------------------------------------------------------------------------
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+// ---------------------------------------------------------------------------
+// CMS : pages et menu
+// ---------------------------------------------------------------------------
+
+model Page {
+  id              Int      @id @default(autoincrement())
+  slug            String   @unique // "" = page d'accueil
+  title           String // <title> complet de la page
+  breadcrumbLabel String // libellé du fil d'Ariane
+  metaDescription String   @default("")
+  metaKeywords    String   @default("")
+  bodyClass       String   @default("bootstrap bd-body-7 bd-pagebackground-104 bd-margins")
+  // <head> complet de la page (gabarit avec placeholders {{TITLE}}, etc.),
+  // repris à l'identique du site d'origine
+  headHtml        String   @default("")
+  // Chemin utilisé pour le lien de partage AddToAny (URLs historiques en .html)
+  sharePath       String   @default("")
+  // Contenu principal (entre le header et le footer), HTML brut
+  contentHtml     String   @default("")
+  // HTML supplémentaire juste avant </body> (scripts spécifiques à la page)
+  extraTail       String   @default("")
+  // Mode d'édition : "html" (HTML brut) ou "blocks" (générateur de blocs)
+  editorMode      String   @default("html")
+  blocksJson      String   @default("[]")
+  published       Boolean  @default(true)
+  // Pages issues de la migration Joomla (protégées contre la suppression)
+  isLegacy        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  menuItems       MenuItem[]
+}
+
+model MenuItem {
+  id       Int    @id @default(autoincrement())
+  label    String
+  titleAttr String @default("")
+  // Classe CSS Joomla de l'élément (ex : "item-101"), conservée à l'identique
+  cssTag   String @default("")
+  position Int    @default(0)
+  // Soit un lien vers une page interne, soit une URL libre
+  page     Page?  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId   Int?
+  url      String @default("")
+}
+
+// ---------------------------------------------------------------------------
+// Messages du formulaire de contact
+// ---------------------------------------------------------------------------
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  civility  String   @default("")
+  firstName String   @default("")
+  lastName  String   @default("")
+  audience  String   @default("") // "Vous êtes" : Parent, Étudiant, ...
+  phone     String   @default("")
+  email     String   @default("")
+  subject   String   @default("")
+  body      String   @default("")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// E-commerce (prémisses) : vente des livres
+// ---------------------------------------------------------------------------
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  title       String
+  author      String   @default("")
+  description String   @default("") // HTML
+  priceCents  Int      @default(0)
+  imageUrl    String   @default("")
+  stock       Int      @default(0)
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  reference    String      @unique
+  customerName String
+  email        String
+  phone        String      @default("")
+  address      String      @default("")
+  note         String      @default("")
+  // NEW -> CONFIRMED -> SHIPPED (ou CANCELLED)
+  status       String      @default("NEW")
+  totalCents   Int         @default(0)
+  createdAt    DateTime    @default(now())
+  items        OrderItem[]
+
+  // Paiement en ligne (Stripe) : UNPAID (paiement à organiser manuellement,
+  // Stripe non configuré ou commande créée avant son activation) -> PENDING
+  // (redirigé vers Stripe, en attente du webhook) -> PAID -> REFUNDED.
+  paymentStatus   String  @default("UNPAID")
+  stripeSessionId String? @unique
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    Int
+  product    Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId  Int?
+  titleSnapshot String
+  unitCents  Int
+  quantity   Int     @default(1)
+}

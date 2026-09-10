@@ -1,0 +1,37 @@
+[
+  {
+    "cssTag": "item-101",
+    "url": "/",
+    "titleAttr": "BOS & BOP",
+    "label": "Accueil",
+    "position": 1
+  },
+  {
+    "cssTag": "item-134",
+    "url": "/bilan-orientation-scolaire-professionnel-toulouse",
+    "titleAttr": "BOS & BOP",
+    "label": "BOS & BOP",
+    "position": 2
+  },
+  {
+    "cssTag": "item-135",
+    "url": "/prestations-orientation-scolaire-professionnel-toulouse",
+    "titleAttr": "Prestation Orientation",
+    "label": "Prestation Orientation",
+    "position": 3
+  },
+  {
+    "cssTag": "item-170",
+    "url": "/recrutement",
+    "titleAttr": "",
+    "label": "Prestation Recrutement",
+    "position": 4
+  },
+  {
+    "cssTag": "item-136",
+    "url": "/contact-orientation-scolaire-professionnel-toulouse",
+    "titleAttr": "Contacter BOS & BOP",
+    "label": "Contact",
+    "position": 5
+  }
+]

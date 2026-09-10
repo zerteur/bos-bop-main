@@ -1,0 +1,39 @@
+{
+  "name": "bos-bop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site BOS & BOP — migration Joomla 3 vers Next.js (CMS + admin + e-commerce)",
+  "scripts": {
+    "dev": "next dev",
+    "postinstall": "prisma generate",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "deploy": "prisma generate && prisma db push && npm run db:seed && next build",
+    "extract:legacy": "node scripts/extract-legacy.mjs && node scripts/decompose-legacy.mjs",
+    "decompose:legacy": "node scripts/decompose-legacy.mjs"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.10.0",
+    "bcryptjs": "^3.0.2",
+    "jose": "^6.0.11",
+    "next": "^15.3.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "stripe": "^22.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "playwright-core": "^1.61.1",
+    "prisma": "^6.10.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0"
+  }
+}
