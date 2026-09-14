@@ -40,7 +40,7 @@ export default async function ProductsPage() {
               <th></th>
               <th>Titre</th>
               <th>Prix</th>
-              <th>Stock</th>
+
               <th>Statut</th>
               <th>Actions</th>
             </tr>
@@ -61,7 +61,7 @@ export default async function ProductsPage() {
                   {p.author && <div style={{ color: "var(--texte-2)", fontSize: 13 }}>{p.author}</div>}
                 </td>
                 <td>{formatPrice(p.priceCents)}</td>
-                <td>{p.stock}</td>
+
                 <td>
                   {p.published ? (
                     <span className="badge vert">En vente</span>

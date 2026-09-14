@@ -56,6 +56,9 @@ model Page {
   isLegacy        Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  viewCount        Int      @default(0)
+  humanViewCount   Int      @default(0)
+  totalTimeSeconds Int      @default(0)
   menuItems       MenuItem[]
 }
 
@@ -101,12 +104,18 @@ model Product {
   author      String   @default("")
   description String   @default("") // HTML
   priceCents  Int      @default(0)
-  imageUrl    String   @default("")
-  stock       Int      @default(0)
+  imageUrl      String   @default("")
+  pdfPath       String?  @default("") // Chemin sécurisé vers le PDF (pour e-book)
+  epubPath      String?  @default("") // Chemin vers le fichier EPUB
+  previewImages String   @default("[]") // JSON array of preview image URLs
   published   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  viewCount        Int      @default(0)
+  humanViewCount   Int      @default(0)
+  totalTimeSeconds Int      @default(0)
   orderItems  OrderItem[]
+  accesses    PurchaseAccess[]
 }
 
 model Order {
@@ -122,6 +131,7 @@ model Order {
   totalCents   Int         @default(0)
   createdAt    DateTime    @default(now())
   items        OrderItem[]
+  accesses     PurchaseAccess[]
 
   // Paiement en ligne (Stripe) : UNPAID (paiement à organiser manuellement,
   // Stripe non configuré ou commande créée avant son activation) -> PENDING
@@ -139,4 +149,51 @@ model OrderItem {
   titleSnapshot String
   unitCents  Int
   quantity   Int     @default(1)
+}
+
+model PurchaseAccess {
+  id        String   @id @default(uuid())
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  magicCode          String?
+  magicCodeExpiresAt DateTime?
+
+  devices            AccessDevice[]
+
+  createdAt DateTime @default(now())
+}
+
+model AccessDevice {
+  id               Int            @id @default(autoincrement())
+  purchaseAccessId String
+  access           PurchaseAccess @relation(fields: [purchaseAccessId], references: [id], onDelete: Cascade)
+  deviceCookie     String         @unique
+  userAgent        String         @default("")
+  ipAddress        String         @default("")
+  createdAt        DateTime       @default(now())
+  lastUsedAt       DateTime       @default(now())
+}
+
+model TrafficStat {
+  id         Int      @id @default(autoincrement())
+  date       String   // YYYY-MM-DD
+  path       String
+  views      Int      @default(0)
+  humanViews Int      @default(0)
+  duration   Int      @default(0)
+
+  @@unique([date, path])
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String   @default("")
+  phone     String   @default("")
+  optIn     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

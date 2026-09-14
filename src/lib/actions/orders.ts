@@ -16,7 +16,14 @@ export async function updateOrderStatusAction(formData: FormData) {
   const id = Number(formData.get("id"));
   const status = str(formData, "status", 20);
   if (ORDER_STATUSES.has(status)) {
-    await prisma.order.update({ where: { id }, data: { status } });
+    const order = await prisma.order.findUnique({ where: { id }, select: { email: true, reference: true, status: true } });
+    if (order && order.status !== status) {
+      await prisma.order.update({ where: { id }, data: { status } });
+      if (status === "SHIPPED") {
+        const { sendShippingEmail } = await import("../email");
+        await sendShippingEmail(order.email, order.reference);
+      }
+    }
   }
   revalidatePath("/admin/commandes");
   redirect(`/admin/commandes/${id}`);
@@ -32,4 +39,21 @@ export async function checkOrderPaymentAction(formData: FormData) {
   if (order) await reconcileOrderPayment(order.reference);
   revalidatePath(`/admin/commandes/${id}`);
   redirect(`/admin/commandes/${id}`);
+}
+
+export async function markOrderPaidAction(formData: FormData) {
+  await requireSession();
+  const id = Number(formData.get("id"));
+  const { markOrderPaid } = await import("../orders");
+  await markOrderPaid(id);
+  revalidatePath(`/admin/commandes/${id}`);
+  redirect(`/admin/commandes/${id}`);
+}
+
+export async function deleteOrderAction(formData: FormData) {
+  await requireSession();
+  const id = Number(formData.get("id"));
+  await prisma.order.delete({ where: { id } });
+  revalidatePath("/admin/commandes");
+  redirect("/admin/commandes");
 }

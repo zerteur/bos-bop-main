@@ -21,19 +21,31 @@
  * extract-legacy.mjs.
  */
 
-// Sélecteurs très spécifiques + !important : le CSS d'origine impose
-// `display:block !important` / `display:table-cell` avec des sélecteurs déjà
-// spécifiques (`.bd-horizontalmenu-7 .nav`, `.nav-justified > li`…).
+// Sélecteurs très spécifiques + !important : on remplace le comportement d'origine.
+// Pour éviter que le menu horizontal ne déborde ou ne prenne trop de place en hauteur (wrap)
+// sur les écrans moyens (tablettes, petits PC), on force le menu mobile (hamburger) jusqu'à 1199px.
 const MENU_LAYOUT_RULES =
-  "@media (min-width:768px){" +
+  /* Sur grands écrans (>= 1200px), on affiche le menu horizontal avec flex-wrap en sécurité */
+  "@media (min-width:1200px){" +
+  ".bd-hmenu-6 .navbar-collapse .bd-horizontalmenu-7{display:block !important;width:100% !important}" +
   ".bd-hmenu-6 .navbar-collapse .bd-menu-13.nav{" +
-  "display:flex !important;flex-wrap:wrap !important;" +
+  "display:flex !important;flex-wrap:wrap !important;gap:0;" +
   "justify-content:center !important;align-items:stretch !important;width:100% !important}" +
   ".bd-hmenu-6 .navbar-collapse .bd-menu-13.nav>li{" +
-  "display:block !important;float:none !important;width:auto !important}" +
-  // Le filet vertical entre onglets (border-right) n'a plus de sens en bout
-  // de ligne : on le neutralise pour le dernier onglet de chaque rangée.
-  ".bd-hmenu-6 .navbar-collapse .bd-menu-13.nav>li:last-child>a{border-right-width:0 !important}" +
+  "display:block !important;float:none !important;width:auto !important;margin:0 !important}" +
+  /* Réduction des marges internes et de la taille de police pour maximiser le nombre d'onglets sur une seule ligne */
+  ".bd-hmenu-6 .navbar-collapse .bd-menu-13.nav>li>a{padding:10px 8px !important;font-size:13px !important;border-right-width:0 !important}" +
+  /* Corrige la hauteur fixe du conteneur de l'en-tête qui masquait les onglets s'ils passaient à la ligne (texte blanc sur fond blanc) */
+  ".bd-layoutbox-29{height:auto !important;min-height:47px !important;}" +
+  "}" +
+  /* Sur écrans moyens (768px à 1199px), on force l'affichage du hamburger au lieu du menu horizontal */
+  "@media (min-width:768px) and (max-width:1199px){" +
+  ".bd-hmenu-6 .collapse-button{display:block !important}" +
+  ".bd-hmenu-6 .navbar-collapse.collapse{display:none !important}" +
+  ".bd-hmenu-6 .navbar-collapse.collapse.in, .bd-hmenu-6 .navbar-collapse.collapsing{display:block !important}" +
+  /* On s'assure que les items du menu déroulant soient disposés verticalement (et non en table-cell) */
+  ".bd-hmenu-6 .navbar-collapse .bd-menu-13.nav>li{" +
+  "display:block !important;float:none !important;width:100% !important;margin:0 !important}" +
   "}";
 
 export const MENU_FIX_STYLE = `<style>${MENU_LAYOUT_RULES}</style>`;

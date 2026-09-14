@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { deleteMessageAction } from "@/lib/admin-actions";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
 import { formatDate } from "@/lib/format";
+import { MessageReplyClient } from "./MessageReplyClient";
 
 export const dynamic = "force-dynamic";
 
@@ -50,15 +51,9 @@ export default async function MessageDetailPage({
         <div style={{ whiteSpace: "pre-wrap", marginTop: 18 }}>{message.body}</div>
       </div>
 
-      <div className="actions-ligne">
-        {message.email && (
-          <a
-            className="btn principal"
-            href={`mailto:${message.email}?subject=${encodeURIComponent(`Re: ${message.subject}`)}`}
-          >
-            Répondre par email
-          </a>
-        )}
+      <MessageReplyClient message={message} />
+      
+      <div className="actions-ligne" style={{ marginTop: "20px" }}>
         <form action={deleteMessageAction}>
           <input type="hidden" name="id" value={message.id} />
           <ConfirmButton className="btn danger" message="Supprimer définitivement ce message ?">

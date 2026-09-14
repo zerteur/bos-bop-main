@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
   const product = await prisma.product.findUnique({ where: { id: productId } });
   const cart = readCart(request);
-  if (product && product.published && product.stock > 0) {
+  if (product && product.published) {
     cart[String(product.id)] = Math.min((cart[String(product.id)] ?? 0) + quantity, 99);
   }
 

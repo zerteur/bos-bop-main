@@ -13,8 +13,16 @@ import {
   SESSION_COOKIE,
 } from "../auth";
 import { formString as str } from "../forms";
+import { isRateLimited } from "../rate-limit";
+import { headers } from "next/headers";
 
 export async function loginAction(formData: FormData) {
+  const reqHeaders = await headers();
+  const ip = reqHeaders.get("x-forwarded-for")?.split(",")[0].trim() || reqHeaders.get("x-real-ip") || "inconnu";
+  if (isRateLimited(`login:${ip}`, 5, 15 * 60 * 1000)) {
+    redirect("/admin/login?error=2"); // Rate limited
+  }
+
   const email = str(formData, "email", 200).toLowerCase();
   const password = str(formData, "password", 200);
   const user = await prisma.user.findUnique({ where: { email } });

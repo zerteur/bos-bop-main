@@ -188,6 +188,33 @@ export async function renderPage(
       `<div class="message-uniform">${options.injectFormMessage}</div>`,
     );
   }
+  let tailHtml = page.extraTail || "";
+  if (page.id !== 0) {
+    tailHtml += `
+<script>
+  (function(){
+    var start = Date.now();
+    var isHuman = false;
+    var trackHuman = function() { isHuman = true; };
+    window.addEventListener('mousemove', trackHuman, {once:true});
+    window.addEventListener('keydown', trackHuman, {once:true});
+    window.addEventListener('scroll', trackHuman, {once:true});
+    window.addEventListener('click', trackHuman, {once:true});
+    window.addEventListener('touchstart', trackHuman, {once:true});
+    
+    window.addEventListener('beforeunload', function() {
+      var duration = Math.round((Date.now() - start) / 1000);
+      navigator.sendBeacon("/api/track", JSON.stringify({
+        id: ${page.id},
+        type: "page",
+        duration: duration,
+        isHuman: isHuman,
+        path: window.location.pathname
+      }));
+    });
+  })();
+</script>`;
+  }
   return renderDocument({
     slug: page.slug,
     title: page.title,
@@ -196,7 +223,7 @@ export async function renderPage(
     bodyClass: page.bodyClass,
     headHtml: page.headHtml || getHeadTemplate(),
     contentHtml,
-    extraTail: page.extraTail,
+    extraTail: tailHtml,
     breadcrumbLabel: page.breadcrumbLabel,
     sharePath: page.sharePath || (page.slug === "" ? "/" : `/${page.slug}.html`),
   });

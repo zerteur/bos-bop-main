@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { formatPrice } from "@/lib/shop";
 import { formatDate, ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/format";
-import { updateOrderStatusAction, checkOrderPaymentAction } from "@/lib/admin-actions";
+import { updateOrderStatusAction, checkOrderPaymentAction, markOrderPaidAction } from "@/lib/admin-actions";
 import { reconcileOrderPayment } from "@/lib/orders";
+import DeleteOrderForm from "@/components/admin/DeleteOrderForm";
 
 export const dynamic = "force-dynamic";
 
@@ -104,6 +105,18 @@ export default async function OrderDetailPage({
               </button>
             </form>
           )}
+          {(order.paymentStatus === "UNPAID" || order.paymentStatus === "FAILED") && (
+            <form action={markOrderPaidAction} style={{ marginTop: 8 }}>
+              <input type="hidden" name="id" value={order.id} />
+              <button type="submit" className="btn principal petit">
+                Marquer comme payée & Envoyer les e-books
+              </button>
+            </form>
+          )}
+
+          <hr style={{ margin: "20px 0", borderTop: "1px solid var(--bord)" }} />
+          
+          <DeleteOrderForm id={order.id} />
         </div>
       </div>
 

@@ -5,7 +5,7 @@
  * Propage le vrai message d'erreur du serveur (taille, type de fichier,
  * session expirée…) au lieu d'un message générique impossible à diagnostiquer.
  */
-export async function uploadFile(file: File): Promise<string> {
+export async function uploadFile(file: File): Promise<{ url: string, internalPath?: string }> {
   const body = new FormData();
   body.append("file", file);
   const response = await fetch("/api/admin/upload", { method: "POST", body });
@@ -19,6 +19,6 @@ export async function uploadFile(file: File): Promise<string> {
     }
     throw new Error(message);
   }
-  const data = (await response.json()) as { url: string };
-  return data.url;
+  const data = (await response.json()) as { url: string, internalPath?: string };
+  return data;
 }

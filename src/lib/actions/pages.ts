@@ -63,6 +63,7 @@ export async function createPageAction(formData: FormData) {
   }
 
   revalidatePath("/admin/pages");
+  revalidatePath("/", "layout");
   // Ouvre directement le studio d'édition immersif
   redirect(`/admin/studio/${page.id}`);
 }
@@ -105,6 +106,7 @@ export async function updatePageAction(formData: FormData) {
 
   await prisma.page.update({ where: { id }, data });
   revalidatePath("/admin/pages");
+  revalidatePath("/", "layout");
   // Rafraîchit la page publique correspondante
   const publicPath = (data.slug ?? page.slug) === "" ? "/" : `/${data.slug ?? page.slug}`;
   revalidatePath(publicPath);
@@ -157,6 +159,7 @@ export async function togglePagePublishedAction(formData: FormData) {
     });
   }
   revalidatePath("/admin/pages");
+  revalidatePath("/", "layout");
   redirect("/admin/pages");
 }
 
@@ -169,5 +172,6 @@ export async function deletePageAction(formData: FormData) {
     await prisma.page.delete({ where: { id } });
   }
   revalidatePath("/admin/pages");
+  revalidatePath("/", "layout");
   redirect("/admin/pages");
 }

@@ -26,6 +26,7 @@ export {
 export {
   toggleMessageReadAction,
   deleteMessageAction,
+  replyToMessageAction,
 } from "./actions/messages";
 
 export {
@@ -33,7 +34,7 @@ export {
   deleteProductAction,
 } from "./actions/products";
 
-export { updateOrderStatusAction, checkOrderPaymentAction } from "./actions/orders";
+export { updateOrderStatusAction, checkOrderPaymentAction, markOrderPaidAction, deleteOrderAction } from "./actions/orders";
 
 export {
   saveSettingsAction,
@@ -41,4 +42,7 @@ export {
   saveWidgetsAction,
   saveStripeSettingsAction,
   saveRecaptchaSettingsAction,
+  saveSmtpSettingsAction,
+  saveEmailDesignSettingsAction,
+  testSmtpAction,
 } from "./actions/settings";

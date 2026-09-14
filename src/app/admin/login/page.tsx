@@ -17,9 +17,11 @@ export default async function LoginPage({
       <div className="login-box">
         <h1>BOS &amp; BOP</h1>
         <p className="sous">Administration du site</p>
-        {params.error && (
+        {params.error === "2" ? (
+          <div className="notice erreur">Trop de tentatives. Réessayez dans 15 minutes.</div>
+        ) : params.error ? (
           <div className="notice erreur">Identifiants incorrects.</div>
-        )}
+        ) : null}
         <form action={loginAction}>
           <input type="hidden" name="next" value={params.next ?? ""} />
           <label className="champ">

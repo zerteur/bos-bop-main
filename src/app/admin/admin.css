@@ -1,7 +1,8 @@
 /* Administration BOS & BOP — interface moderne, sobre et lisible */
 
 :root {
-  --or: #ddc076; /* doré de la charte BOS & BOP */
+  --or: #ddc076;
+  --or-clair: #fbf7ea; /* doré de la charte BOS & BOP */
   --or-fonce: #c4a95c;
   --encre: #1f2430;
   --encre-2: #343b4d;
@@ -68,7 +69,7 @@ a:hover { text-decoration: underline; }
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #cfd4e2;
   font-weight: 500;
   margin-bottom: 2px;
@@ -105,7 +106,7 @@ a:hover { text-decoration: underline; }
 }
 .admin-sidebar .sidebar-footer button:hover { background: var(--encre-2); color: #fff; }
 
-.admin-main { flex: 1; padding: 28px 34px 60px; max-width: 1200px; }
+.admin-main { flex: 1; padding: 28px 34px 60px; max-width: 100%; }
 
 .admin-main h1 { font-size: 24px; margin: 0 0 4px; }
 .admin-main .subtitle { color: var(--texte-2); margin: 0 0 24px; }
@@ -136,10 +137,12 @@ a:hover { text-decoration: underline; }
 
 table.liste { width: 100%; border-collapse: collapse; background: var(--carte); border: 1px solid var(--bord); border-radius: 12px; overflow: hidden; }
 table.liste th, table.liste td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--bord); vertical-align: middle; }
-table.liste th { background: #fafbfd; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--texte-2); }
+table.liste th { background: #fafbfd; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--texte-2); border-bottom: 2px solid var(--bord); }
+table.liste tbody tr:hover { background: #fbfbfc; }
+table.liste { box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
 table.liste tr:last-child td { border-bottom: none; }
 table.liste tr.non-lu { font-weight: 600; background: #fffdf4; }
-table.liste img.mini { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid var(--bord); }
+table.liste img.mini { width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid var(--bord); }
 
 /* ---------- Formulaires ---------- */
 
@@ -301,6 +304,7 @@ code.slug { background: #eef0f5; border-radius: 6px; padding: 2px 7px; font-size
 
 /* Blocs dans l'éditeur */
 .builder-block {
+  transition: box-shadow 0.2s, transform 0.2s;
   border: 1px solid var(--bord); border-radius: 10px; background: #fff; margin: 0; overflow: hidden;
 }
 .builder-block.ouvert { border-color: var(--or); box-shadow: 0 1px 8px rgba(20,30,60,.08); }
@@ -356,10 +360,12 @@ code.slug { background: #eef0f5; border-radius: 6px; padding: 2px 7px; font-size
 }
 .palette-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
 .palette-item {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   text-align: left; border: 1px solid var(--bord); border-radius: 10px; background: #fff; padding: 12px 14px; cursor: pointer;
   display: flex; flex-direction: column; gap: 2px; transition: border-color .12s, background .12s;
 }
-.palette-item:hover { border-color: var(--or); background: #fbf7ea; }
+.palette-item:hover {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08); transform: translateY(-2px); border-color: var(--or); background: #fbf7ea; }
 .palette-item-icone { font-size: 20px; }
 .palette-item-nom { font-weight: 700; }
 .palette-item-desc { font-size: 12px; color: var(--texte-2); }

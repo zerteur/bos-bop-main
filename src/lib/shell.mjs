@@ -65,6 +65,8 @@ export function renderShell(templates, page, menuItems, options) {
   const header = templates.header
     .replaceAll("{{PAGE_PATH}}", path)
     .replaceAll("{{SHARE_HREF}}", shareHref)
+    .replaceAll("{{SHARE_URL}}", encodeURIComponent(shareUrl))
+    .replaceAll("{{SHARE_TITLE}}", encodeURIComponent(page.title))
     .replaceAll("{{MENU_ITEMS}}", buildMenuItems(menuItems, path));
 
   const footer = templates.footer.replaceAll(
@@ -82,7 +84,9 @@ export function renderShell(templates, page, menuItems, options) {
     `</head><body class="${page.bodyClass}">` +
     templates.preBody +
     header +
+    `<main id="main-content">` +
     page.contentHtml +
+    `</main>` +
     footer +
     tail +
     "</body></html>"

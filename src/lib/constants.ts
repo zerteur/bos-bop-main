@@ -11,7 +11,7 @@ export const HOME_BODY_CLASS =
   "bootstrap bd-body-1 bd-homepage bd-pagebackground-49 bd-margins";
 
 /** URL publique par défaut (modifiable dans Réglages). */
-export const DEFAULT_SITE_URL = "https://www.bos-bop.fr";
+export const DEFAULT_SITE_URL = "https://bos-bop.fr";
 
 /** Chemins réservés : routes techniques, boutique, aperçu. */
 export const RESERVED_SLUGS = new Set([

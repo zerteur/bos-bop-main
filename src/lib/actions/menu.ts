@@ -26,6 +26,7 @@ export async function addMenuItemAction(formData: FormData) {
     },
   });
   revalidatePath("/admin/menu");
+  revalidatePath("/", "layout");
   redirect("/admin/menu?ok=ajoute");
 }
 
@@ -42,6 +43,7 @@ export async function updateMenuItemAction(formData: FormData) {
     data: { label, titleAttr: str(formData, "titleAttr", 150) },
   });
   revalidatePath("/admin/menu");
+  revalidatePath("/", "layout");
   redirect("/admin/menu?ok=renomme");
 }
 
@@ -60,6 +62,7 @@ export async function moveMenuItemAction(formData: FormData) {
     }
   }
   revalidatePath("/admin/menu");
+  revalidatePath("/", "layout");
   redirect("/admin/menu");
 }
 
@@ -67,5 +70,6 @@ export async function deleteMenuItemAction(formData: FormData) {
   await requireSession();
   await prisma.menuItem.delete({ where: { id: Number(formData.get("id")) } });
   revalidatePath("/admin/menu");
+  revalidatePath("/", "layout");
   redirect("/admin/menu");
 }

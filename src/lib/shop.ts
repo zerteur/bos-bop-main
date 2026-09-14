@@ -26,7 +26,7 @@ function productImage(product: Product, height: number): string {
     `display:flex;align-items:center;justify-content:center;height:${height}px;` +
     `background:#f7f6f2;border-radius:6px;overflow:hidden;`;
   if (product.imageUrl) {
-    return `<div style="${frame}"><img alt="${escapeHtml(product.title)}" src="${escapeHtml(product.imageUrl)}" style="max-width:100%;max-height:100%;object-fit:contain;"/></div>`;
+    return `<div style="${frame}"><img alt="${escapeHtml(product.title)}" src="${escapeHtml(product.imageUrl)}" loading="lazy" decoding="async" style="max-width:100%;max-height:100%;object-fit:contain;"/></div>`;
   }
   return `<div style="${frame}">
 <svg viewBox="0 0 24 24" width="${Math.round(height / 3)}" height="${Math.round(height / 3)}" aria-hidden="true" fill="none" stroke="${GOLD}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
@@ -40,14 +40,11 @@ function productCard(product: Product): string {
   const author = product.author
     ? `<p style="margin:2px 0 0;color:#777;font-style:italic;">${escapeHtml(product.author)}</p>`
     : "";
-  const action =
-    product.stock > 0
-      ? `<form action="/api/cart/add" method="post" style="margin:12px 0 0;">
+  const action = `<form action="/api/cart/add" method="post" style="margin:12px 0 0;">
 <input name="productId" type="hidden" value="${product.id}"/>
 <input name="quantity" type="hidden" value="1"/>
 <button type="submit">Ajouter au panier</button>
-</form>`
-      : `<p style="margin:12px 0 0;"><em>Bientôt disponible</em></p>`;
+</form>`;
   return `<div class="col-sm-4" style="margin-bottom:26px;">
 <div style="border:1px solid #e6e4dd;border-radius:8px;padding:18px;text-align:center;background:#fff;box-shadow:0 1px 4px rgba(16,47,64,.06);height:100%;">
 <a href="/livres/${escapeHtml(product.slug)}" title="${escapeHtml(product.title)}" style="text-decoration:none;">${productImage(product, 190)}</a>
@@ -74,20 +71,45 @@ ${body}`);
 }
 
 export function viewProductDetail(product: Product): string {
-  const addForm =
-    product.stock > 0
-      ? `<form action="/api/cart/add" method="post" style="margin:18px 0 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+  let previewImages: string[] = [];
+  try {
+    if ((product as any).previewImages) {
+      previewImages = JSON.parse((product as any).previewImages);
+    }
+  } catch {}
+
+  const imagesList = [product.imageUrl, ...previewImages].filter(Boolean);
+  let carouselHtml = productImage(product, 320);
+
+  if (imagesList.length > 1) {
+    const slides = imagesList.map((img, i) => `
+      <div style="flex: 0 0 100%; scroll-snap-align: start; text-align: center;">
+        <img src="${escapeHtml(img)}" alt="Image ${i+1}" loading="lazy" decoding="async" style="max-width: 100%; height: auto; max-height: 400px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />
+      </div>
+    `).join("");
+    
+    carouselHtml = `
+      <div style="position: relative;">
+        <div style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 10px; padding-bottom: 10px; -webkit-overflow-scrolling: touch;">
+          ${slides}
+        </div>
+        <p style="text-align: center; font-size: 13px; color: #777; margin-top: 5px;"><i>Faites glisser pour voir les extraits</i></p>
+      </div>
+    `;
+  }
+
+  const addForm = `<form action="/api/cart/add" method="post" style="margin:18px 0 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
 <input name="productId" type="hidden" value="${product.id}"/>
 <label style="display:flex;align-items:center;gap:8px;margin:0;">Quantité
 <input max="99" min="1" name="quantity" type="number" value="1" style="width:64px;padding:8px;border:1px solid #ccc;border-radius:5px;"/>
 </label>
 <button type="submit">Ajouter au panier</button>
-</form>`
-      : `<p style="margin:18px 0 0;"><em>Cet ouvrage sera bientôt disponible.</em></p>`;
+</form>`;
+
   return section(`<p style="margin-bottom:16px;"><a href="/livres" title="Retour à la liste des livres" style="color:${NAVY};">&larr; Retour aux livres</a></p>
 <div class="row">
 <div class="col-sm-5">
-${productImage(product, 320)}
+${carouselHtml}
 </div>
 <div class="col-sm-7">
 <h2 style="margin-top:0;">${escapeHtml(product.title)}</h2>
@@ -203,11 +225,112 @@ ${errorHtml}
 <div class="row">
 <div class="col-sm-6">
 <form action="/api/checkout" method="post">
+<!-- Honeypot anti-spam caché -->
+<div style="display:none;" aria-hidden="true">
+  <label for="bd_site_web">Ne pas remplir ce champ si vous êtes humain :</label>
+  <input type="text" name="bd_site_web" id="bd_site_web" tabIndex="-1" autocomplete="off" />
+</div>
 <p><label style="font-weight:600;">Nom complet<span class="required">*</span><br/><input name="customerName" required="required" style="${input}" type="text"/></label></p>
 <p><label style="font-weight:600;">Email<span class="required">*</span><br/><input name="email" required="required" style="${input}" type="email"/></label></p>
 <p><label style="font-weight:600;">Téléphone<br/><input name="phone" style="${input}" type="text"/></label></p>
-<p><label style="font-weight:600;">Adresse de livraison<span class="required">*</span><br/><textarea name="address" required="required" rows="4" style="${input}"></textarea></label></p>
-<p><label style="font-weight:600;">Remarque (facultatif)<br/><textarea name="note" rows="3" style="${input}"></textarea></label></p>
+
+  <div style="margin-bottom: 16px;">
+    <label style="font-weight:600;" for="address-input">Adresse de livraison<span class="required">*</span></label>
+    <div style="position:relative; z-index:100; margin-top:5px;">
+      <textarea id="address-input" name="address" required="required" rows="3" style="${input} resize:vertical; display:block; margin:0;" autocomplete="off" placeholder="Commencez à taper votre adresse..."></textarea>
+      <ul id="address-suggestions" style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #ccc; max-height:350px; overflow-y:auto; z-index:1000; list-style:none; margin:0; padding:0; display:none; box-shadow:0 10px 25px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05); border-radius:8px; border:1px solid #e2e8f0; border-top:none; border-top-left-radius:0; border-top-right-radius:0;"></ul>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('address-input');
+      const suggestions = document.getElementById('address-suggestions');
+      
+      // Force validation dès le départ (impossible de soumettre le formulaire sans choisir une adresse)
+      input.setCustomValidity("Veuillez impérativement sélectionner une adresse valide dans la liste proposée.");
+      
+      let timeoutId;
+      input.addEventListener('input', (e) => {
+        // Dès qu'on tape, on invalide l'adresse car elle n'est plus issue d'un clic
+        input.setCustomValidity("Veuillez impérativement sélectionner une adresse valide dans la liste proposée.");
+        
+        clearTimeout(timeoutId);
+        const query = e.target.value;
+        if (query.length < 5) { suggestions.style.display = 'none';
+        input.style.borderBottomLeftRadius = '5px';
+        input.style.borderBottomRightRadius = '5px';
+        return; }
+        timeoutId = setTimeout(() => {
+          fetch('https://api-adresse.data.gouv.fr/search/?q=' + encodeURIComponent(query) + '&limit=5')
+            .then(res => res.json())
+            .then(data => {
+              if (data.features && data.features.length > 0) {
+                suggestions.innerHTML = '';
+                data.features.forEach(feature => {
+                  const li = document.createElement('li');
+                  li.style.padding = '12px 16px'; 
+                  li.style.cursor = 'pointer'; 
+                  li.style.borderBottom = '1px solid #f1f5f9';
+                  li.style.transition = 'background-color 0.2s ease';
+                  
+                  const p = feature.properties;
+                  const streetName = p.name || p.label.split(p.postcode)[0] || p.label;
+                  
+                  li.innerHTML = 
+                    '<div style="display: flex; align-items: flex-start; gap: 14px;">' +
+                      '<div style="color: #ddc076; flex-shrink: 0; margin-top: 2px;">' +
+                        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>' +
+                      '</div>' +
+                      '<div style="flex-grow: 1;">' +
+                        '<div style="font-weight: 600; color: #1f2430; font-size: 15px; margin-bottom: 2px;">' + streetName + '</div>' +
+                        (p.postcode ? '<div style="color: #6b7280; font-size: 13px;">' + p.postcode + ' ' + p.city + '</div>' : '') +
+                        (p.context ? '<div style="color: #9ba3b5; font-size: 11px; margin-top: 3px;">' + p.context + '</div>' : '') +
+                      '</div>' +
+                    '</div>';
+                  
+                  li.addEventListener('mouseover', () => li.style.backgroundColor = '#f8fafc');
+                  li.addEventListener('mouseout', () => li.style.backgroundColor = 'white');
+                  li.addEventListener('click', () => {
+                    input.value = feature.properties.label;
+                    input.setCustomValidity(""); // Adresse validée !
+                    suggestions.style.display = 'none';
+                    input.style.borderBottomLeftRadius = '5px';
+                    input.style.borderBottomRightRadius = '5px';
+                  });
+                  suggestions.appendChild(li);
+                });
+                suggestions.style.display = 'block';
+                input.style.borderBottomLeftRadius = '0';
+                input.style.borderBottomRightRadius = '0';
+              } else { suggestions.style.display = 'none'; 
+                input.style.borderBottomLeftRadius = '5px';
+                input.style.borderBottomRightRadius = '5px';
+              }
+            });
+        }, 300);
+      });
+      document.addEventListener('click', (e) => {
+        if (e.target !== input && e.target !== suggestions) {
+          suggestions.style.display = 'none';
+          input.style.borderBottomLeftRadius = '5px';
+          input.style.borderBottomRightRadius = '5px';
+        }
+      });
+    });
+  </script>
+  
+
+  <p><label style="font-weight:600;">Remarque (facultatif)<br/><textarea name="note" rows="3" style="${input}"></textarea></label></p>
+  <div style="border: 2px solid ${GOLD}; background-color: #fbf7ea; padding: 15px; border-radius: 6px; margin: 20px 0; text-align: left; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 2px 8px rgba(221,192,118,0.2);">
+    <input type="checkbox" id="newsletter" name="newsletter" value="true" style="margin-top: 4px; transform: scale(1.6); cursor: pointer; accent-color: ${NAVY};" />
+    <label for="newsletter" style="cursor: pointer; font-weight: 700; color: ${NAVY}; font-size: 15px; margin: 0; line-height: 1.3;">
+      OUI, je souhaite recevoir les offres privilèges, les actualités et les conseils exclusifs de BOS & BOP !
+      <div style="font-weight: normal; font-size: 13px; color: #555; margin-top: 6px; line-height: 1.4;">
+        Rejoignez notre communauté en exclusivité. Désinscription possible à tout moment en un clic. Promis, on ne spamme pas !
+      </div>
+    </label>
+  </div>
+  
 <p><button type="submit">${stripeEnabled ? "Passer au paiement" : "Confirmer la commande"}</button></p>
 </form>
 </div>

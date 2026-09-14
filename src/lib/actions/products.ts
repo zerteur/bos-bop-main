@@ -28,7 +28,9 @@ export async function saveProductAction(formData: FormData) {
     description: str(formData, "description", 20_000),
     priceCents: parsePriceCents(str(formData, "price", 20)),
     imageUrl: str(formData, "imageUrl", 500),
-    stock: Math.max(0, Math.floor(Number(formData.get("stock")) || 0)),
+    pdfPath: str(formData, "pdfPath", 500),
+    epubPath: str(formData, "epubPath", 500),
+    previewImages: formData.get("previewImages") ? String(formData.get("previewImages")) : "[]",
     published: formData.get("published") === "1",
   };
 

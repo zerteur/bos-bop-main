@@ -48,11 +48,12 @@ export async function POST(request: NextRequest) {
       .slice(0, 60) || "fichier";
     const name = `${Date.now().toString(36)}-${base}${ext}`;
 
-    const dir = join(process.cwd(), "public", "uploads");
+    const isEbook = ext === ".pdf";
+    const dir = join(process.cwd(), isEbook ? join("content", "ebooks") : join("public", "uploads"));
     await mkdir(dir, { recursive: true });
     await writeFile(join(dir, name), Buffer.from(await file.arrayBuffer()));
 
-    return Response.json({ url: `/uploads/${name}` });
+    return Response.json({ url: isEbook ? `/api/ebooks/${name}` : `/uploads/${name}`, internalPath: isEbook ? name : undefined });
   } catch (error) {
     console.error("Échec du téléversement :", error);
     return Response.json({ error: "Échec de l'envoi côté serveur (voir les journaux)." }, { status: 500 });

@@ -1,0 +1,1 @@
+const fs = require('fs'); let code = fs.readFileSync('src/lib/blocks.ts', 'utf8'); code = code.replaceAll('</div>\, opts)', '</div>\, opts, { bg: block.bg })'); code = code.replaceAll('{ sectionStyle: 'background-color:#223352;' }', '{ sectionStyle: 'background-color:#223352;', bg: block.bg }'); fs.writeFileSync('src/lib/blocks.ts', code);

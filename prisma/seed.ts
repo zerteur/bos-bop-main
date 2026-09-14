@@ -154,7 +154,6 @@ async function main() {
       description:
         "<p>Fiche produit d'exemple créée par l'installation. Modifiez-la ou supprimez-la depuis l'administration (rubrique Livres).</p>",
       priceCents: 1990,
-      stock: 10,
       published: true,
     },
     update: {},

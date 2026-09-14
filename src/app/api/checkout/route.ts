@@ -67,16 +67,25 @@ export async function POST(request: NextRequest) {
     },
   });
 
+  const newsletter = form.get("newsletter") === "true";
+
+  // Upsert Customer (CRM)
+  await prisma.customer.upsert({
+    where: { email },
+    create: { email, name: customerName, phone: field("phone"), optIn: newsletter },
+    update: { name: customerName, phone: field("phone"), optIn: newsletter }
+  });
+
+  const { sendOrderConfirmationEmail } = await import("@/lib/email");
+  await sendOrderConfirmationEmail(order.email, order.reference, order.totalCents);
+
   const confirmationPath = `/commande/confirmation?ref=${encodeURIComponent(order.reference)}`;
 
   if (!useStripe) {
-    // Pas de paiement à attendre : stocks décrémentés immédiatement.
-    for (const line of lines) {
-      await prisma.product.update({
-        where: { id: line.product.id },
-        data: { stock: Math.max(0, line.product.stock - line.quantity) },
-      });
-    }
+    // Pas de paiement en ligne configuré : on considère la commande comme payée
+    // immédiatement pour envoyer les e-books.
+    const { markOrderPaid } = await import("@/lib/orders");
+    await markOrderPaid(order.id);
     return seeOther(confirmationPath);
   }
 
@@ -84,12 +93,6 @@ export async function POST(request: NextRequest) {
   // Stripe est injoignable ou mal configuré : le client ne doit jamais se
   // retrouver bloqué par un problème côté prestataire de paiement.
   async function fallbackToManualPayment(): Promise<Response> {
-    for (const line of lines) {
-      await prisma.product.update({
-        where: { id: line.product.id },
-        data: { stock: Math.max(0, line.product.stock - line.quantity) },
-      });
-    }
     await prisma.order.update({ where: { id: order.id }, data: { paymentStatus: "UNPAID" } });
     return seeOther(confirmationPath);
   }

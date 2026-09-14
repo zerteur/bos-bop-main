@@ -31,6 +31,7 @@ const GROUPS: readonly NavGroup[] = [
     links: [
       { href: "/admin/produits", label: "Livres" },
       { href: "/admin/commandes", label: "Commandes", badgeKey: "orders" },
+      { href: "/admin/crm", label: "Clients & CRM" },
     ],
   },
   {

@@ -24,6 +24,20 @@ function AlignField({ value, onChange }: { value: TextAlign; onChange: (v: TextA
   );
 }
 
+function BgField({ value, onChange }: { value: string | undefined; onChange: (v: any) => void }) {
+  return (
+    <label className="champ">
+      Couleur de fond
+      <select value={value || ""} onChange={(e) => onChange(e.target.value || undefined)}>
+        <option value="">Transparent (par défaut)</option>
+        <option value="gris">Gris clair</option>
+        <option value="bleu">Bleu pastel</option>
+        <option value="or">Doré léger</option>
+      </select>
+    </label>
+  );
+}
+
 function ButtonFields({
   label,
   url,
@@ -161,6 +175,7 @@ export function BlockEditorFields({
               </div>
             ))}
           </div>
+          <BgField value={block.bg} onChange={(v) => u({ bg: v })} />
         </>
       );
     }
@@ -213,6 +228,7 @@ export function BlockEditorFields({
           >
             + Ajouter une carte
           </button>
+          <BgField value={block.bg} onChange={(v) => u({ bg: v })} />
         </>
       );
     }
@@ -246,6 +262,7 @@ export function BlockEditorFields({
             onLabel={(v) => u({ buttonLabel: v })}
             onUrl={(v) => u({ buttonUrl: v })}
           />
+          <BgField value={block.bg} onChange={(v) => u({ bg: v })} />
         </>
       );
     }
@@ -294,6 +311,7 @@ export function BlockEditorFields({
             onLabel={(v) => u({ buttonLabel: v })}
             onUrl={(v) => u({ buttonUrl: v })}
           />
+          <BgField value={block.bg} onChange={(v) => u({ bg: v })} />
         </>
       );
     }

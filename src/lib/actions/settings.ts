@@ -77,3 +77,48 @@ export async function saveStripeSettingsAction(formData: FormData) {
   revalidatePath("/admin/parametres");
   redirect("/admin/parametres?ok=1");
 }
+
+export async function saveSmtpSettingsAction(formData: FormData) {
+  await requireSession();
+  await setSetting("smtpHost", str(formData, "smtpHost", 300));
+  await setSetting("smtpPort", str(formData, "smtpPort", 10));
+  await setSetting("smtpSecure", formData.get("smtpSecure") === "1" ? "1" : "0");
+  await setSetting("smtpUser", str(formData, "smtpUser", 300));
+  const pass = str(formData, "smtpPass", 300);
+  if (pass) await setSetting("smtpPass", pass);
+  revalidatePath("/admin/parametres");
+  redirect("/admin/parametres?ok=1");
+}
+
+export async function testSmtpAction(formData: FormData) {
+  await requireSession();
+  const testEmail = str(formData, "testEmail", 300);
+  if (!testEmail) {
+    redirect("/admin/parametres?erreur=email-vide");
+  }
+
+  try {
+    const { sendTestEmail } = await import("../email");
+    await sendTestEmail(testEmail);
+  } catch (error) {
+    console.error("Test SMTP échoué:", error);
+    redirect("/admin/parametres?erreur=email-fail");
+  }
+
+  redirect("/admin/parametres?ok=email-ok");
+}
+
+
+export async function saveEmailDesignSettingsAction(formData: FormData) {
+  await requireSession();
+  const emailLogoUrl = str(formData, "emailLogoUrl", 300);
+  const emailAvatarUrl = str(formData, "emailAvatarUrl", 300);
+  const emailSenderName = str(formData, "emailSenderName", 300);
+
+  await setSetting("emailLogoUrl", emailLogoUrl);
+  await setSetting("emailAvatarUrl", emailAvatarUrl);
+  await setSetting("emailSenderName", emailSenderName);
+
+  revalidatePath("/admin/parametres");
+  redirect("/admin/parametres?ok=1");
+}

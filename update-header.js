@@ -1,0 +1,36 @@
+const fs = require('fs');
+
+function updateHeader() {
+  let html = fs.readFileSync('templates/header.html', 'utf8');
+  const start = html.indexOf('<span class="a2a_kit');
+  const end = html.indexOf('</span> </div>', start);
+  
+  if (start > -1 && end > -1) {
+    const endPos = end + '</span>'.length;
+    const before = html.substring(0, start);
+    const after = html.substring(endPos);
+    
+    const replacement = `
+<div class="custom-share-buttons" style="display: flex; gap: 8px; align-items: center;">
+  <a href="https://www.facebook.com/sharer/sharer.php?u={{SHARE_URL}}" rel="nofollow noopener" target="_blank" title="Partager sur Facebook" style="background-color: #ddc076; width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 32 32" style="width: 20px; height: 20px;"><path d="M28 16c0-6.627-5.373-12-12-12S4 9.373 4 16c0 5.628 3.875 10.35 9.101 11.647v-7.98h-2.474V16H13.1v-1.58c0-4.085 1.849-5.978 5.859-5.978.76 0 2.072.15 2.608.298v3.325c-.283-.03-.775-.045-1.386-.045-1.967 0-2.728.745-2.728 2.683V16h3.92l-.673 3.667h-3.247v8.245C23.395 27.195 28 22.135 28 16" fill="#fff"></path></svg>
+  </a>
+  <a href="https://x.com/intent/tweet?url={{SHARE_URL}}&text={{SHARE_TITLE}}" rel="nofollow noopener" target="_blank" title="Partager sur X" style="background-color: #ddc076; width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" style="width: 14px; height: 14px;"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#FFF"></path></svg>
+  </a>
+  <a href="https://www.linkedin.com/shareArticle?mini=true&url={{SHARE_URL}}" rel="nofollow noopener" target="_blank" title="Partager sur LinkedIn" style="background-color: #ddc076; width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 32 32" style="width: 18px; height: 18px;"><path d="M6.227 12.61h4.19v13.48h-4.19zm2.095-6.7a2.43 2.43 0 0 1 0 4.86c-1.344 0-2.428-1.09-2.428-2.43s1.084-2.43 2.428-2.43m4.72 6.7h4.02v1.84h.058c.56-1.058 1.927-2.176 3.965-2.176 4.238 0 5.02 2.792 5.02 6.42v7.395h-4.183v-6.56c0-1.564-.03-3.574-2.178-3.574-2.18 0-2.514 1.7-2.514 3.46v6.668h-4.187z" fill="#FFF"></path></svg>
+  </a>
+  <a href="mailto:?subject={{SHARE_TITLE}}&body=Bonjour,%0A%0AJe%20vous%20partage%20ce%20lien%20qui%20pourrait%20vous%20int%C3%A9resser%20:%0A{{SHARE_URL}}" rel="nofollow noopener" title="Partager par e-mail" style="background-color: #ddc076; width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#FFF"></path></svg>
+  </a>
+</div>`;
+
+    fs.writeFileSync('templates/header.html', before + replacement + after);
+    console.log('Successfully updated header.html');
+  } else {
+    console.log('Could not find AddToAny block in header.html');
+  }
+}
+
+updateHeader();

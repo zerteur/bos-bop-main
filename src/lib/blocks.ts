@@ -13,14 +13,16 @@ import { escapeHtml } from "./shell.mjs";
 
 export type TextAlign = "left" | "center" | "right";
 
+export type BackgroundColor = "blanc" | "gris" | "bleu" | "or";
+
 export type Block =
   | { type: "hero"; title: string; subtitle: string; imageUrl: string; buttonLabel: string; buttonUrl: string }
-  | { type: "richtext"; heading: string; headingLevel: "h2" | "h3"; body: string; align: TextAlign }
-  | { type: "columns"; count: number; columns: { heading: string; body: string }[] }
-  | { type: "cards"; heading: string; intro: string; cards: { title: string; body: string }[] }
-  | { type: "imageText"; imageUrl: string; imagePosition: "left" | "right"; heading: string; body: string; buttonLabel: string; buttonUrl: string }
+  | { type: "richtext"; heading: string; headingLevel: "h2" | "h3"; body: string; align: TextAlign; bg?: BackgroundColor }
+  | { type: "columns"; count: number; columns: { heading: string; body: string }[]; bg?: BackgroundColor }
+  | { type: "cards"; heading: string; intro: string; cards: { title: string; body: string }[]; bg?: BackgroundColor }
+  | { type: "imageText"; imageUrl: string; imagePosition: "left" | "right"; heading: string; body: string; buttonLabel: string; buttonUrl: string; bg?: BackgroundColor }
   | { type: "image"; url: string; alt: string; width: string; align: TextAlign }
-  | { type: "cta"; heading: string; body: string; buttonLabel: string; buttonUrl: string }
+  | { type: "cta"; heading: string; body: string; buttonLabel: string; buttonUrl: string; bg?: BackgroundColor }
   | { type: "button"; label: string; url: string; newTab: boolean; align: TextAlign }
   | { type: "spacer"; size: "petit" | "moyen" | "grand" }
   | { type: "separator" }
@@ -260,12 +262,17 @@ ${inner}
 function contentSection(
   inner: string,
   opts: CompileOptions,
-  extra: { sectionStyle?: string; sectionClass?: string } = {},
+  extra: { sectionStyle?: string; sectionClass?: string; bg?: BackgroundColor } = {},
 ): string {
+  let style = extra.sectionStyle ?? "";
+  if (extra.bg === "gris") style += "background-color: #f8f9fa;";
+  else if (extra.bg === "bleu") style += "background-color: #f0f4f8;";
+  else if (extra.bg === "or") style += "background-color: #fbf7ea;";
+
   return sectionShell(inner, {
     id: `bd-block-${opts.blockIndex ?? 0}`,
     sectionClass: extra.sectionClass,
-    sectionStyle: extra.sectionStyle,
+    sectionStyle: style,
     extraAttrs: blockAttr(opts),
   });
 }
@@ -339,7 +346,7 @@ function compileBlock(block: Block, opts: CompileOptions): string {
           : "";
       const align = block.align !== "left" ? ` style="text-align:${block.align};"` : "";
       const body = `<div${fieldAttr(opts, "body")}>\n${textToHtml(ph(block.body, "Votre texte…"))}\n</div>`;
-      return contentSection(`<div${align}>\n${heading}\n${body}\n</div>`, opts);
+      return contentSection(`<div${align}>\n${heading}\n${body}\n</div>`, opts, { bg: block.bg });
     }
 
     case "columns": {
@@ -356,7 +363,7 @@ function compileBlock(block: Block, opts: CompileOptions): string {
           return `<div class="col-sm-${span}">\n${heading}\n<div${fieldAttr(opts, `columns.${i}.body`)}>\n${textToHtml(ph(col.body, "Votre texte…"))}\n</div>\n</div>`;
         })
         .join("\n");
-      return contentSection(`<div class="row">\n${cols}\n</div>`, opts);
+      return contentSection(`<div class="row">\n${cols}\n</div>`, opts, { bg: block.bg });
     }
 
     case "cards": {
@@ -383,7 +390,7 @@ ${title}
 </div>`;
         })
         .join("\n");
-      return contentSection(`${heading}\n${intro}\n<div class="row">\n${cards}\n</div>`, opts);
+      return contentSection(`${heading}\n${intro}\n<div class="row">\n${cards}\n</div>`, opts, { bg: block.bg });
     }
 
     case "imageText": {
@@ -395,7 +402,7 @@ ${title}
       const textCol = `<div class="col-sm-6">\n${heading}\n<div${fieldAttr(opts, "body")}>\n${textToHtml(ph(block.body, "Votre texte…"))}\n</div>\n${btn ? `<p>${btn}</p>` : ""}\n</div>`;
       const imgCol = `<div class="col-sm-6">\n<p>${img}</p>\n</div>`;
       const inner = block.imagePosition === "right" ? textCol + "\n" + imgCol : imgCol + "\n" + textCol;
-      return contentSection(`<div class="row bd-row-flex bd-row-align-middle">\n${inner}\n</div>`, opts);
+      return contentSection(`<div class="row bd-row-flex bd-row-align-middle">\n${inner}\n</div>`, opts, { bg: block.bg });
     }
 
     case "image": {
@@ -419,7 +426,7 @@ ${title}
       const body = `<p style="color:#fff;"${fieldAttr(opts, "body")}>${escapeHtml(ph(block.body, "Votre texte…"))}</p>`;
       const btn = button(block.buttonLabel, block.buttonUrl, false, opts, "buttonLabel");
       const inner = `<div style="text-align:center;padding:20px 0;">\n${heading}\n${body}\n${btn ? `<p style="margin-top:16px;">${btn}</p>` : ""}\n</div>`;
-      return contentSection(inner, opts, { sectionStyle: "background-color:#223352;" });
+      return contentSection(inner, opts, { sectionStyle: "background-color:#223352;", bg: block.bg });
     }
 
     case "button": {

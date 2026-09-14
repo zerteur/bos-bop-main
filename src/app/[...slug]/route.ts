@@ -52,19 +52,46 @@ async function renderShopRoute(
       metaDescription: "Les ouvrages sélectionnés par BOS & BOP.",
       contentHtml: viewShopList(products),
     });
-    return new Response(html, { headers: HTML_HEADERS });
+    return new Response(html, { headers: { ...HTML_HEADERS, "Cache-Control": "public, s-maxage=60, stale-while-revalidate=3600" } });
   }
 
   if (first === "livres" && parts.length === 2) {
     const product = await prisma.product.findUnique({ where: { slug: second } });
     if (!product || !product.published) return renderNotFound();
+    
+    let contentHtml = viewProductDetail(product);
+    contentHtml += `
+<script>
+  (function(){
+    var start = Date.now();
+    var isHuman = false;
+    var trackHuman = function() { isHuman = true; };
+    window.addEventListener('mousemove', trackHuman, {once:true});
+    window.addEventListener('keydown', trackHuman, {once:true});
+    window.addEventListener('scroll', trackHuman, {once:true});
+    window.addEventListener('click', trackHuman, {once:true});
+    window.addEventListener('touchstart', trackHuman, {once:true});
+    
+    window.addEventListener('beforeunload', function() {
+      var duration = Math.round((Date.now() - start) / 1000);
+      navigator.sendBeacon("/api/track", JSON.stringify({
+        id: ${product.id},
+        type: "product",
+        duration: duration,
+        isHuman: isHuman,
+        path: window.location.pathname
+      }));
+    });
+  })();
+</script>`;
+
     const html = await renderVirtualPage({
       path: `livres/${product.slug}`,
       shortTitle: product.title,
       metaDescription: `${product.title} — ${product.author}`.trim(),
-      contentHtml: viewProductDetail(product),
+      contentHtml,
     });
-    return new Response(html, { headers: HTML_HEADERS });
+    return new Response(html, { headers: { ...HTML_HEADERS, "Cache-Control": "public, s-maxage=60, stale-while-revalidate=3600" } });
   }
 
   if (first === "panier" && parts.length === 1) {
@@ -135,7 +162,7 @@ export async function GET(
           ? CONTACT_RECAPTCHA_ERROR_HTML
           : undefined;
       const html = await renderPage(page, { injectFormMessage: formMessage });
-      return new Response(html, { headers: HTML_HEADERS });
+      return new Response(html, { headers: { ...HTML_HEADERS, "Cache-Control": "public, s-maxage=60, stale-while-revalidate=3600" } });
     }
   }
 

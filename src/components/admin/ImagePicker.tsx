@@ -20,7 +20,7 @@ export function ImagePicker({
     setUploading(true);
     setError(null);
     try {
-      onChange(await uploadFile(file));
+      onChange((await uploadFile(file)).url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de l'envoi du fichier.");
     } finally {

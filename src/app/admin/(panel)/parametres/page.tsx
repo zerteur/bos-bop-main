@@ -5,6 +5,9 @@ import {
   changePasswordAction,
   saveStripeSettingsAction,
   saveRecaptchaSettingsAction,
+  saveSmtpSettingsAction,
+  saveEmailDesignSettingsAction,
+  testSmtpAction,
 } from "@/lib/admin-actions";
 import { isStripeConfigured, isStripeWebhookConfigured } from "@/lib/stripe";
 import { getRecaptchaSiteKey, isRecaptchaSecretConfigured } from "@/lib/recaptcha";
@@ -18,6 +21,9 @@ const MESSAGES: Record<string, { type: "ok" | "erreur"; text: string }> = {
   "mdp-court": { type: "erreur", text: "Le nouveau mot de passe doit contenir au moins 8 caractères." },
   "mdp-differents": { type: "erreur", text: "La confirmation ne correspond pas au nouveau mot de passe." },
   "mdp-actuel": { type: "erreur", text: "Le mot de passe actuel est incorrect." },
+  "email-ok": { type: "ok", text: "L'e-mail de test a été envoyé avec succès !" },
+  "email-fail": { type: "erreur", text: "Échec de l'envoi de l'e-mail. Vérifiez vos identifiants SMTP." },
+  "email-vide": { type: "erreur", text: "L'adresse e-mail de test est requise." },
 };
 
 export default async function SettingsPage({
@@ -27,9 +33,17 @@ export default async function SettingsPage({
 }) {
   const { ok, erreur } = await searchParams;
   const notice = MESSAGES[ok ?? ""] ?? MESSAGES[erreur ?? ""];
-  const [siteUrl, shopEnabled] = await Promise.all([
+  const [siteUrl, shopEnabled, smtpHost, smtpPort, smtpSecure, smtpUser, smtpPassOk, emailLogoUrl, emailAvatarUrl, emailSenderName] = await Promise.all([
     getSetting("siteUrl", DEFAULT_SITE_URL),
     getSetting("shopEnabled", "0"),
+    getSetting("smtpHost", ""),
+    getSetting("smtpPort", "587"),
+    getSetting("smtpSecure", "0"),
+    getSetting("smtpUser", ""),
+    getSetting("smtpPass", "").then(p => !!p),
+    getSetting("emailLogoUrl", "/assets/images/4cd7c0f7b92c_logotype-bops-bop.svg"),
+    getSetting("emailAvatarUrl", "/assets/images/logocarre.jpg"),
+    getSetting("emailSenderName", "L'équipe BOS & BOP"),
   ]);
   const [stripeKeyOk, stripeWebhookOk, publicOrigin, recaptchaSiteKey, recaptchaSecretOk] =
     await Promise.all([
@@ -279,6 +293,100 @@ export default async function SettingsPage({
             </>
           )}
         </form>
+      </div>
+
+
+      <div className="panel">
+        <h2>Design des E-mails</h2>
+        <p className="subtitle">
+          Personnalisez l'apparence des e-mails envoyés par la plateforme (newsletters, commandes, réponses de contact).
+        </p>
+        <form action={saveEmailDesignSettingsAction}>
+          <label className="champ">
+            Nom d'expédition <span className="aide">(ex: L'équipe BOS & BOP)</span>
+            <input type="text" name="emailSenderName" defaultValue={emailSenderName} required />
+          </label>
+          <label className="champ">
+            URL du logo <span className="aide">(chemin relatif ou absolu)</span>
+            <input type="text" name="emailLogoUrl" defaultValue={emailLogoUrl} required />
+          </label>
+          <label className="champ">
+            URL de l'avatar <span className="aide">(Affiche une photo de profil dans la signature)</span>
+            <input type="text" name="emailAvatarUrl" defaultValue={emailAvatarUrl} />
+          </label>
+          <button type="submit" className="btn principal">
+            Enregistrer le design
+          </button>
+        </form>
+      </div>
+
+      <div className="panel">
+        <h2>Serveur d'envoi d'emails (SMTP)</h2>
+        <p className="subtitle">
+          Configuration requise pour envoyer automatiquement les liens de lecture des livres numériques (e-books) par email.
+        </p>
+
+        <form action={saveSmtpSettingsAction}>
+          <div className="grille-2">
+            <label className="champ">
+              Hôte SMTP <span className="aide">(ex: smtp.gmail.com)</span>
+              <input type="text" name="smtpHost" defaultValue={smtpHost} />
+            </label>
+            <label className="champ">
+              Port <span className="aide">(ex: 465 ou 587)</span>
+              <input type="number" name="smtpPort" defaultValue={smtpPort} />
+            </label>
+          </div>
+          
+          <label className="champ">
+            Nom d'utilisateur <span className="aide">(votre adresse email)</span>
+            <input type="email" name="smtpUser" defaultValue={smtpUser} />
+          </label>
+          
+          <label className="champ">
+            Mot de passe{" "}
+            <span className="aide">
+              ({smtpPassOk ? "déjà enregistré — " : ""}laisser vide pour{" "}
+              {smtpPassOk ? "ne pas le changer" : "ne rien modifier"})
+            </span>
+            <input
+              type="password"
+              name="smtpPass"
+              placeholder={smtpPassOk ? "••••••••••••••••••••" : ""}
+              autoComplete="off"
+            />
+          </label>
+
+          <label className="champ-inline">
+            <input type="checkbox" name="smtpSecure" value="1" defaultChecked={smtpSecure === "1"} />
+            Connexion sécurisée (SSL/TLS - requis pour le port 465)
+          </label>
+
+          <button type="submit" className="btn principal">
+            Enregistrer
+          </button>
+        </form>
+
+        <form action={testSmtpAction} style={{ marginTop: '20px', padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
+          <p className="subtitle" style={{ marginTop: 0 }}><strong>Tester la connexion :</strong></p>
+          <label className="champ-inline">
+            <input type="email" name="testEmail" placeholder="Entrez une adresse email..." required />
+            <button type="submit" className="btn secondaire petit">Envoyer un test</button>
+          </label>
+        </form>
+      </div>
+
+      <div className="panel">
+        <h2>Sécurité & Données</h2>
+        <p className="subtitle">
+          Vous pouvez télécharger une copie intégrale de la base de données (commandes, clients, pages, statistiques)
+          pour garantir la sécurité de vos informations. Conservez ce fichier en lieu sûr.
+        </p>
+        <div style={{ marginTop: "15px", marginBottom: "30px" }}>
+          <a href="/api/admin/backup" className="btn principal" download style={{ background: "#c0392b", color: "#fff", textDecoration: "none" }}>
+            📥 Télécharger la Sauvegarde (bosbop.db)
+          </a>
+        </div>
       </div>
 
       <div className="panel">

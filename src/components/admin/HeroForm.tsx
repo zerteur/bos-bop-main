@@ -22,7 +22,7 @@ export function HeroForm({
     setUploading(true);
     setError(null);
     try {
-      setImageUrl(await uploadFile(file));
+      setImageUrl((await uploadFile(file)).url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de l'envoi du fichier.");
     } finally {
