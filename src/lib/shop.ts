@@ -45,7 +45,7 @@ function productCard(product: Product): string {
 <input name="quantity" type="hidden" value="1"/>
 <button type="submit">Ajouter au panier</button>
 </form>`;
-  return `<div class="col-sm-4" style="margin-bottom:26px;">
+  return `<div class="col-sm-4 col-xs-12" style="margin-bottom:26px;">
 <div style="border:1px solid #e6e4dd;border-radius:8px;padding:18px;text-align:center;background:#fff;box-shadow:0 1px 4px rgba(16,47,64,.06);height:100%;">
 <a href="/livres/${escapeHtml(product.slug)}" title="${escapeHtml(product.title)}" style="text-decoration:none;">${productImage(product, 190)}</a>
 <h3 style="margin:14px 0 0;font-size:19px;"><a href="/livres/${escapeHtml(product.slug)}" style="color:${NAVY};text-decoration:none;">${escapeHtml(product.title)}</a></h3>
@@ -98,7 +98,7 @@ export function viewProductDetail(product: Product): string {
     `;
   }
 
-  const addForm = `<form action="/api/cart/add" method="post" style="margin:18px 0 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+  const addForm = `<form action="/api/cart/add" method="post" style="margin:18px 0 0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;max-width:100%;">
 <input name="productId" type="hidden" value="${product.id}"/>
 <label style="display:flex;align-items:center;gap:8px;margin:0;">Quantité
 <input max="99" min="1" name="quantity" type="number" value="1" style="width:64px;padding:8px;border:1px solid #ccc;border-radius:5px;"/>

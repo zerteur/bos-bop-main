@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Calculateur Simple - Stripe & URSSAF</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Nunito', sans-serif; background-color: #f8fafc; }
+        .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025); }
+    </style>
+</head>
+<body class="p-4 md:p-8 text-gray-800">
+    <div class="max-w-6xl mx-auto space-y-8">
+        
+        <!-- En-tête ultra simple -->
+        <div class="text-center max-w-2xl mx-auto mb-10">
+            <h1 class="text-4xl font-extrabold text-slate-800 mb-3">Combien je gagne <span class="text-green-500">vraiment</span> ?</h1>
+            <p class="text-lg text-slate-500">Remplissez vos chiffres simplement, et regardez les graphiques se dessiner tout seuls pour comprendre où va votre argent.</p>
+        </div>
+
+        <!-- Section 1 : Formulaire & Résultat principal -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Questions simples (Formulaire) -->
+            <div class="bg-white rounded-2xl p-8 card-shadow border-t-4 border-blue-400">
+                <h2 class="text-2xl font-bold text-slate-700 mb-6">1. Mes informations</h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-lg font-semibold text-slate-700 mb-2">💰 À quel prix je vends mon produit ?</label>
+                        <div class="relative">
+                            <input type="number" id="price" value="12.90" step="0.01" class="w-full text-2xl p-3 border-2 border-slate-200 rounded-xl focus:border-blue-400 focus:outline-none transition-colors">
+                            <span class="absolute right-4 top-4 text-2xl text-slate-400">€</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-lg font-semibold text-slate-700 mb-2">💳 Stripe (La carte de mon client)</label>
+                        <select id="cardType" class="w-full text-lg p-3 border-2 border-slate-200 rounded-xl focus:border-blue-400 focus:outline-none">
+                            <option value="premium">Carte Classique ou Premium (la plus courante)</option>
+                            <option value="standard">Carte de base ancienne</option>
+                            <option value="intl">Carte d'un client hors Europe</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-lg font-semibold text-slate-700 mb-2">🏛️ Mon URSSAF (%)</label>
+                            <input type="number" id="urssaf" value="12.3" step="0.1" class="w-full text-xl p-3 border-2 border-slate-200 rounded-xl focus:border-blue-400 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-lg font-semibold text-slate-700 mb-2">📋 Autres taxes (%)</label>
+                            <input type="number" id="otherTaxes" value="1.0" step="0.1" class="w-full text-xl p-3 border-2 border-slate-200 rounded-xl focus:border-blue-400 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Résultat Magique -->
+            <div class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl p-8 card-shadow border-t-4 border-green-500 flex flex-col justify-center items-center text-center">
+                <h2 class="text-2xl font-bold text-green-900 mb-2">2. Sur une vente, il va vous rester :</h2>
+                <div class="text-6xl font-black text-green-600 my-6" id="result-net">0,00 €</div>
+                
+                <div class="w-full max-w-md bg-white rounded-xl p-4 shadow-sm border border-green-100">
+                    <div class="flex justify-between text-slate-500 font-medium border-b border-slate-100 pb-2 mb-2">
+                        <span>Le client a payé :</span>
+                        <span id="result-gross" class="text-slate-800 font-bold">0,00 €</span>
+                    </div>
+                    <div class="flex justify-between text-red-400 font-medium">
+                        <span>On vous prend :</span>
+                        <span id="result-fees" class="font-bold">- 0,00 €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2 : Les Graphiques Croisés -->
+        <h2 class="text-3xl font-extrabold text-slate-800 text-center mt-12 mb-8">3. L'analyse visuelle (Les Graphiques)</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Graphique 1 : Le Camembert (Répartition simple) -->
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <h3 class="text-xl font-bold text-center text-slate-700 mb-2">Où va l'argent d'une vente ?</h3>
+                <p class="text-sm text-center text-slate-500 mb-6">La part du gâteau entre vous et les autres.</p>
+                <div class="h-64 relative">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Graphique 2 : Lignes croisées (Qui vous coûte le plus cher ?) -->
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <h3 class="text-xl font-bold text-center text-slate-700 mb-2">La Course des Taxes</h3>
+                <p class="text-sm text-center text-slate-500 mb-6">Comparatif : L'URSSAF vs Stripe sur plusieurs ventes.</p>
+                <div class="h-64 relative">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Graphique 3 : Barres de Comparaison (Moi VS Les Autres) -->
+            <div class="bg-white rounded-2xl p-6 card-shadow">
+                <h3 class="text-xl font-bold text-center text-slate-700 mb-2">Dans ma poche VS Chez les autres</h3>
+                <p class="text-sm text-center text-slate-500 mb-6">Comparaison de ce que vous gardez par rapport à ce que vous perdez.</p>
+                <div class="h-64 relative">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let pieChart, lineChart, barChart;
+
+        // Formateur d'euros pour un affichage joli
+        const formatEuro = (amount) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+
+        // Arrondi comptable magique
+        function bankRound(value) { return Math.round(value + Number.EPSILON); }
+
+        function updateCalculations() {
+            // 1. Récupérer les chiffres (très simple)
+            const price = parseFloat(document.getElementById('price').value) || 0;
+            const cardType = document.getElementById('cardType').value;
+            const urssafRate = (parseFloat(document.getElementById('urssaf').value) || 0) / 100;
+            const otherTaxesRate = (parseFloat(document.getElementById('otherTaxes').value) || 0) / 100;
+
+            let stripeVarRate = 0.019; // Par défaut premium
+            if (cardType === 'standard') stripeVarRate = 0.015;
+            if (cardType === 'intl') stripeVarRate = 0.0315;
+            
+            // 2. Faire le calcul parfait
+            const priceCents = bankRound(price * 100);
+            
+            const stripeVarCents = bankRound(priceCents * stripeVarRate);
+            const stripeFixedCents = priceCents > 0 ? 25 : 0;
+            const stripeTotalCents = stripeVarCents + stripeFixedCents;
+            
+            const urssafCents = bankRound(priceCents * urssafRate);
+            const otherTaxesCents = bankRound(priceCents * otherTaxesRate);
+            
+            const taxesTotalCents = stripeTotalCents + urssafCents + otherTaxesCents;
+            const netCents = priceCents - taxesTotalCents;
+
+            // Retour en euros
+            const net = netCents / 100;
+            const stripeTotal = stripeTotalCents / 100;
+            const urssafTotal = urssafCents / 100;
+            const otherTotal = otherTaxesCents / 100;
+            const totalFrais = taxesTotalCents / 100;
+
+            // 3. Mettre à jour les gros textes
+            document.getElementById('result-gross').innerText = formatEuro(price);
+            document.getElementById('result-fees').innerText = "- " + formatEuro(totalFrais);
+            document.getElementById('result-net').innerText = formatEuro(net);
+
+            // 4. Mettre à jour les 3 Graphiques Croisés
+
+            // Graphique 1 : Camembert (Répartition de 1 vente)
+            const ctxPie = document.getElementById('pieChart').getContext('2d');
+            const pieData = {
+                labels: ['Dans ma poche', 'Stripe', 'URSSAF', 'Autres'],
+                datasets: [{
+                    data: [net, stripeTotal, urssafTotal, otherTotal],
+                    backgroundColor: ['#22c55e', '#6366f1', '#f59e0b', '#ef4444'],
+                    borderWidth: 2, borderColor: '#ffffff'
+                }]
+            };
+            if(pieChart) { pieChart.data = pieData; pieChart.update(); }
+            else { pieChart = new Chart(ctxPie, { type: 'pie', data: pieData, options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); }
+
+            // Préparation des données croisées (Volumes 10, 50, 100)
+            const volumes = [10, 50, 100, 200];
+            const labelsVol = volumes.map(v => v + " ventes");
+            
+            // Graphique 2 : Lignes croisées (La Course des Taxes)
+            // On croise l'évolution de Stripe vs l'évolution de l'URSSAF
+            const ctxLine = document.getElementById('lineChart').getContext('2d');
+            const lineData = {
+                labels: labelsVol,
+                datasets: [
+                    { label: 'Ce que prend l\'URSSAF', data: volumes.map(v => v * urssafTotal), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4 },
+                    { label: 'Ce que prend Stripe', data: volumes.map(v => v * stripeTotal), borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.4 }
+                ]
+            };
+            if(lineChart) { lineChart.data = lineData; lineChart.update(); }
+            else { lineChart = new Chart(ctxLine, { type: 'line', data: lineData, options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } } }); }
+
+            // Graphique 3 : Barres de Comparaison (Moi VS Les Autres)
+            // On croise (compare) directement le Net et le Total des Frais côte à côte
+            const ctxBar = document.getElementById('barChart').getContext('2d');
+            const barData = {
+                labels: labelsVol,
+                datasets: [
+                    { label: 'Argent Gagné (Moi)', data: volumes.map(v => v * net), backgroundColor: '#22c55e', borderRadius: 4 },
+                    { label: 'Argent Perdu (Les autres)', data: volumes.map(v => v * totalFrais), backgroundColor: '#ef4444', borderRadius: 4 }
+                ]
+            };
+            if(barChart) { barChart.data = barData; barChart.update(); }
+            else { barChart = new Chart(ctxBar, { type: 'bar', data: barData, options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } } }); }
+        }
+
+        // Connecter le formulaire
+        ['price', 'cardType', 'urssaf', 'otherTaxes'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateCalculations);
+        });
+
+        // Lancer au démarrage
+        updateCalculations();
+    </script>
+</body>
+</html>

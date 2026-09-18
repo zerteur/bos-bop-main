@@ -118,6 +118,7 @@ export async function saveEmailDesignSettingsAction(formData: FormData) {
   await setSetting("emailLogoUrl", emailLogoUrl);
   await setSetting("emailAvatarUrl", emailAvatarUrl);
   await setSetting("emailSenderName", emailSenderName);
+  await setSetting("emailPostalAddress", str(formData, "emailPostalAddress", 300));
 
   revalidatePath("/admin/parametres");
   redirect("/admin/parametres?ok=1");

@@ -38,18 +38,19 @@ export async function replyToMessageAction(formData: FormData) {
   const message = await prisma.contactMessage.findUnique({ where: { id } });
   if (!message || !message.email) throw new Error("Message introuvable ou sans email.");
 
-  const { getTransporter, emailWrapper } = await import("../email");
+  const { getTransporter, sendSiteEmail, sanitizeEmailHtml } = await import("../email");
   const mailer = await getTransporter();
   if (!mailer) throw new Error("Erreur: SMTP non configuré.");
-  
-  const { getSetting } = await import("../settings");
-  const user = await getSetting("smtpUser", "");
-  
-  await mailer.sendMail({
-    from: `"Boutique BOS & BOP" <${user}>`,
+
+  const heading = subject || "Réponse à votre message";
+  await sendSiteEmail({
     to: message.email,
-    subject: subject || `Re: ${message.subject}`,
-    html: await emailWrapper(subject || "Réponse à votre message", content)
+    subject: heading.startsWith("Re:") ? heading : `Re: ${message.subject || heading}`,
+    heading: "Réponse à votre message",
+    bodyHtml: sanitizeEmailHtml(content),
+    trackingSubject: "Réponse contact",
+    trackingUser: message.email,
+    kind: "reply",
   });
 
   return { success: true };

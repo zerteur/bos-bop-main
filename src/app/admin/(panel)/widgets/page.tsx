@@ -30,17 +30,19 @@ export default async function WidgetsPage({
 
   return (
     <>
-      <div className="entete-page">
-        <h1>Widgets</h1>
-        <a href="/" target="_blank" rel="noreferrer" className="btn secondaire">
-          Voir le site ↗
+      <div className="entete-page" style={{ padding: '24px', backgroundColor: '#fff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '24px', color: '#1f2430' }}>⚙️ Widgets du Site</h1>
+          <p className="subtitle" style={{ margin: '4px 0 0 0', color: '#888', fontSize: '14px' }}>
+            Téléphone, réseaux sociaux et barre de partage dans l'en-tête et le pied de page.
+          </p>
+        </div>
+        <a href="/" target="_blank" rel="noreferrer" className="btn secondaire" style={{ borderRadius: '8px', padding: '10px 20px' }}>
+          Voir le site ➔
         </a>
       </div>
-      <p className="subtitle">
-        Téléphone, panier et réseaux sociaux affichés dans l&apos;en-tête et le pied de page du
-        site. L&apos;aperçu se met à jour au fur et à mesure de la saisie.
-      </p>
-      {ok && <div className="notice ok">Widgets enregistrés.</div>}
+      
+      {ok && <div className="notice ok" style={{ padding: '16px', borderRadius: '8px', marginBottom: '24px' }}>Widgets enregistrés.</div>}
 
       <WidgetsForm
         action={saveWidgetsAction}

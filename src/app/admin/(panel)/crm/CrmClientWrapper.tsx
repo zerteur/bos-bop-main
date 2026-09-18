@@ -52,7 +52,7 @@ export function CrmClientWrapper({ customers, history = [] }: { customers: any[]
 
   return (
     <div>
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+      <div className="tabs-row">
         <button className={`btn ${tab === "list" ? "principal" : "secondaire"}`} onClick={() => setTab("list")}>Liste des clients</button>
         <button className={`btn ${tab === "add" ? "principal" : "secondaire"}`} onClick={() => setTab("add")}>Ajouter un contact</button>
         <button className={`btn ${tab === "newsletter" ? "principal" : "secondaire"}`} onClick={() => setTab("newsletter")}>Envoyer une Newsletter</button>
@@ -62,40 +62,40 @@ export function CrmClientWrapper({ customers, history = [] }: { customers: any[]
       {success && <div className="notice ok">{success}</div>}
 
       {tab === "list" && (
-        <div className="panel">
-          <h2>Vos Contacts</h2>
-          <table className="liste">
+        <div className="panel" style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '16px 24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
+          <h2 style={{ fontSize: '18px', color: '#1f2430', marginBottom: '20px' }}>👥 Vos Contacts</h2>
+          <table className="liste" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', whiteSpace: 'nowrap' }}>
             <thead>
-              <tr>
-                <th>Email</th>
-                <th>Nom</th>
-                <th>Téléphone</th>
-                <th>Newsletter</th>
-                <th>Date d'ajout</th>
-                <th>Actions</th>
+              <tr style={{ borderBottom: '2px solid #f0f0f0' }}>
+                <th style={{ padding: '10px 8px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Email</th>
+                <th style={{ padding: '10px 8px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Nom</th>
+                <th style={{ padding: '10px 8px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Téléphone</th>
+                <th style={{ padding: '10px 8px', textAlign: 'center', color: '#666', fontWeight: 600 }}>Newsletter</th>
+                <th style={{ padding: '10px 8px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Date d'ajout</th>
+                <th style={{ padding: '10px 8px', textAlign: 'right', color: '#666', fontWeight: 600 }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {customers.map((c) => (
-                <tr key={c.id}>
-                  <td><strong>{c.email}</strong></td>
-                  <td>{c.name || "-"}</td>
-                  <td>{c.phone || "-"}</td>
-                  <td>
-                    {c.optIn ? <span className="badge vert">Inscrit</span> : <span className="badge gris">Désinscrit</span>}
+                <tr key={c.id} style={{ borderBottom: '1px solid #f9f9f9' }}>
+                  <td style={{ padding: '10px 8px', fontWeight: 600, color: '#1f2430' }}>{c.email}</td>
+                  <td style={{ padding: '10px 8px' }}>{c.name || <span style={{ color: '#ccc' }}>—</span>}</td>
+                  <td style={{ padding: '10px 8px' }}>{c.phone || <span style={{ color: '#ccc' }}>—</span>}</td>
+                  <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                    {c.optIn ? <span className="badge vert" style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '11px', textTransform: 'uppercase' }}>Inscrit</span> : <span className="badge gris" style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '11px', textTransform: 'uppercase' }}>Désinscrit</span>}
                   </td>
-                  <td>{formatDate(c.createdAt)}</td>
-                  <td>
+                  <td style={{ padding: '10px 8px', color: '#888' }}>{formatDate(c.createdAt)}</td>
+                  <td style={{ padding: '10px 8px', textAlign: 'right' }}>
                     <button 
                       className="btn petit" 
-                      style={{ background: "#c0392b", color: "#fff", border: "none" }}
+                      style={{ background: "#ef4444", color: "#fff", border: "none", padding: '4px 10px', borderRadius: '6px' }}
                       onClick={async () => {
                         if (window.confirm("Supprimer ce client ?")) {
                           await deleteCustomerAction(c.id);
                         }
                       }}
                     >
-                      X
+                      ×
                     </button>
                   </td>
                 </tr>
@@ -135,7 +135,10 @@ export function CrmClientWrapper({ customers, history = [] }: { customers: any[]
       {tab === "newsletter" && (
         <div className="panel">
           <h2>Rédiger une Newsletter</h2>
-          <p className="aide" style={{ marginBottom: "20px" }}>Cet e-mail sera envoyé en copie cachée (Cci) à tous les clients ayant le badge "Inscrit". Le design de l'e-mail (logo, couleurs) sera automatiquement appliqué.</p>
+          <p className="aide" style={{ marginBottom: "20px" }}>
+            Envoyé individuellement à chaque contact inscrit, avec le même gabarit que les e-mails de commande
+            (logo, avatar, signature, pixel de suivi). Un lien de désinscription est ajouté automatiquement.
+          </p>
           <form onSubmit={handleSendNewsletter}>
             <label className="champ">
               Objet de l'e-mail
@@ -156,29 +159,31 @@ export function CrmClientWrapper({ customers, history = [] }: { customers: any[]
 
           {history.length > 0 && (
             <div style={{ marginTop: "40px", paddingTop: "30px", borderTop: "1px solid #e3e6ee" }}>
-              <h3 style={{ marginBottom: "20px", color: "#1f2430" }}>Historique des envois</h3>
-              <table className="liste">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Objet</th>
-                    <th style={{ textAlign: "right" }}>Destinataires</th>
-                    <th style={{ textAlign: "right" }}>Ouvertures</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map((h: any) => (
-                    <tr key={h.id}>
-                      <td style={{ color: "#6b7280" }}>{new Date(h.date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
-                      <td style={{ fontWeight: 500 }}>{h.subject}</td>
-                      <td style={{ textAlign: "right" }}>{h.recipientsCount}</td>
-                      <td style={{ textAlign: "right" }}>
-                        <span className="badge vert">{h.opens}</span>
-                      </td>
+              <h3 style={{ marginBottom: "20px", color: "#1f2430", fontSize: '18px' }}>📜 Historique des envois</h3>
+              <div className="panel" style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '16px 24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
+                <table className="liste" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', whiteSpace: 'nowrap' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #f0f0f0' }}>
+                      <th style={{ padding: '10px 8px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Date</th>
+                      <th style={{ padding: '10px 8px', textAlign: 'left', color: '#666', fontWeight: 600 }}>Objet</th>
+                      <th style={{ padding: '10px 8px', textAlign: 'right', color: '#666', fontWeight: 600 }}>Destinataires</th>
+                      <th style={{ padding: '10px 8px', textAlign: 'right', color: '#666', fontWeight: 600 }}>Ouvertures</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {history.map((h: any) => (
+                      <tr key={h.id} style={{ borderBottom: '1px solid #f9f9f9' }}>
+                        <td style={{ padding: '10px 8px', color: '#888' }}>{new Date(h.date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
+                        <td style={{ padding: '10px 8px', fontWeight: 500 }}>{h.subject}</td>
+                        <td style={{ padding: '10px 8px', textAlign: "right" }}>{h.recipientsCount}</td>
+                        <td style={{ padding: '10px 8px', textAlign: "right" }}>
+                          <span className="badge vert" style={{ padding: '4px 10px', borderRadius: '12px', background: '#dcfce7', color: '#166534' }}>{h.opens}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 

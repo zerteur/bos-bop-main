@@ -21,9 +21,10 @@ export async function GET(request: NextRequest) {
   return new Response(pixel, {
     headers: {
       "Content-Type": "image/gif",
+      "Content-Length": String(pixel.length),
       "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-      "Pragma": "no-cache",
-      "Expires": "0",
+      Pragma: "no-cache",
+      Expires: "0",
     },
   });
 }

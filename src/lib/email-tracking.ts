@@ -3,28 +3,30 @@ import { getSetting, setSetting } from "@/lib/settings";
 
 export async function recordUniqueOpen(subject: string, user: string) {
   if (!subject || !user) return;
-  
+
   const key = `opens:${subject}`;
   let openedList: string[] = [];
-  
+
   try {
     const listStr = await getSetting(key, "[]");
     openedList = JSON.parse(listStr);
-  } catch(e) {}
+  } catch {
+    openedList = [];
+  }
 
-  if (!openedList.includes(user)) {
-    // Nouvel utilisateur ! On l'ajoute à la liste pour éviter les doublons
-    openedList.push(user);
-    await setSetting(key, JSON.stringify(openedList));
+  if (openedList.includes(user)) return;
 
-    // On incrémente les statistiques globales
-    const today = new Date().toISOString().split('T')[0];
-    const path = `email:\${subject}`;
+  openedList.push(user);
+  await setSetting(key, JSON.stringify(openedList));
 
-    await prisma.trafficStat.upsert({
+  const today = new Date().toISOString().split("T")[0];
+  const path = `email:${subject}`;
+
+  await prisma.trafficStat
+    .upsert({
       where: { date_path: { date: today, path } },
       create: { date: today, path, views: 1, humanViews: 1, duration: 0 },
-      update: { views: { increment: 1 }, humanViews: { increment: 1 } }
-    }).catch(() => {});
-  }
+      update: { views: { increment: 1 }, humanViews: { increment: 1 } },
+    })
+    .catch(() => {});
 }

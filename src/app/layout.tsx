@@ -1,4 +1,10 @@
 import type { ReactNode } from "react";
+import type { Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 // Racine minimale : les pages publiques sont servies par des route handlers
 // (HTML historique reproduit à l'identique) ; ce layout ne concerne que

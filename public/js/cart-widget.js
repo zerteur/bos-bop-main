@@ -35,7 +35,11 @@
     "#bd-cart-widget .bd-cart-icon{color:#ddc076;display:inline-flex;}" +
     "#bd-cart-widget .bd-cart-badge{display:none;min-width:21px;height:21px;border-radius:11px;" +
     "background:#ddc076;color:#102f40;font-size:12px;line-height:21px;text-align:center;" +
-    "padding:0 6px;font-weight:700;margin-left:1px;}";
+    "padding:0 6px;font-weight:700;margin-left:1px;}" +
+    "@media (max-width:600px){" +
+    "#bd-cart-widget{right:12px;bottom:12px;padding:10px 12px;}" +
+    "#bd-cart-widget .bd-cart-label{display:none;}" +
+    "}";
 
   function cartCount() {
     var match = document.cookie.match(/(?:^|;\s*)bosbop_panier=([^;]*)/);
@@ -70,18 +74,49 @@
     return widget;
   }
 
+  function liftAboveBanner(widget) {
+    var banner = document.getElementById("cookie-banner");
+    var visible = banner && window.getComputedStyle(banner).display !== "none";
+    if (visible) {
+      widget.style.bottom = Math.round(banner.getBoundingClientRect().height + 16) + "px";
+    } else {
+      widget.style.bottom = "";
+    }
+  }
+
   function refresh() {
     var widget = ensureWidget();
     var badge = widget.querySelector(".bd-cart-badge");
     var count = cartCount();
     badge.textContent = String(count);
     badge.style.display = count > 0 ? "inline-block" : "none";
+    liftAboveBanner(widget);
+  }
+
+  function boot() {
+    refresh();
+    setTimeout(refresh, 80);
+    setTimeout(refresh, 400);
+    var banner = document.getElementById("cookie-banner");
+    if (banner && window.MutationObserver) {
+      new MutationObserver(function () {
+        var w = document.getElementById("bd-cart-widget");
+        if (w) liftAboveBanner(w);
+      }).observe(banner, { attributes: true, attributeFilter: ["style", "class"] });
+    }
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", refresh);
+    document.addEventListener("DOMContentLoaded", boot);
   } else {
-    refresh();
+    boot();
   }
   window.addEventListener("pageshow", refresh);
+  window.addEventListener("resize", refresh);
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t && (t.id === "accept-cookies" || t.id === "refuse-cookies")) {
+      setTimeout(refresh, 0);
+    }
+  });
 })();

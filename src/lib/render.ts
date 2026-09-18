@@ -13,6 +13,7 @@ import { renderShell, escapeHtml } from "./shell.mjs";
 import { editorScriptHtml } from "./editor-script";
 import { ICON_FIX_STYLE } from "./icon-fix";
 import { MENU_FIX_STYLE } from "./menu-fix";
+import { RESPONSIVE_FIX_STYLE } from "./responsive-fix";
 import { applyShareCanonical } from "./share";
 import { applyWidgetCustomization } from "./widgets";
 import { applyContactRecaptcha, getRecaptchaSiteKey } from "./recaptcha";
@@ -69,7 +70,8 @@ const SAFETY_SCRIPTS =
   '<script src="/js/scroll-manager.js" defer="defer"></script>' +
   '<script src="/js/contact-form.js" defer="defer"></script>' +
   ICON_FIX_STYLE +
-  MENU_FIX_STYLE;
+  MENU_FIX_STYLE +
+  RESPONSIVE_FIX_STYLE;
 
 const HERO_TITLE_RE =
   /(<h1 class="bd-textblock-20 bd-content-element">)[\s\S]*?(<\/h1>)/;

@@ -12,6 +12,7 @@ import {
 import { isStripeConfigured, isStripeWebhookConfigured } from "@/lib/stripe";
 import { getRecaptchaSiteKey, isRecaptchaSecretConfigured } from "@/lib/recaptcha";
 import { getPublicOriginFromHeaders } from "@/lib/http";
+import { isConsumerMailbox } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function SettingsPage({
 }) {
   const { ok, erreur } = await searchParams;
   const notice = MESSAGES[ok ?? ""] ?? MESSAGES[erreur ?? ""];
-  const [siteUrl, shopEnabled, smtpHost, smtpPort, smtpSecure, smtpUser, smtpPassOk, emailLogoUrl, emailAvatarUrl, emailSenderName] = await Promise.all([
+  const [siteUrl, shopEnabled, smtpHost, smtpPort, smtpSecure, smtpUser, smtpPassOk, emailLogoUrl, emailAvatarUrl, emailSenderName, emailPostalAddress] = await Promise.all([
     getSetting("siteUrl", DEFAULT_SITE_URL),
     getSetting("shopEnabled", "0"),
     getSetting("smtpHost", ""),
@@ -41,9 +42,10 @@ export default async function SettingsPage({
     getSetting("smtpSecure", "0"),
     getSetting("smtpUser", ""),
     getSetting("smtpPass", "").then(p => !!p),
-    getSetting("emailLogoUrl", "/assets/images/4cd7c0f7b92c_logotype-bops-bop.svg"),
+    getSetting("emailLogoUrl", "/assets/images/logocarre.jpg"),
     getSetting("emailAvatarUrl", "/assets/images/logocarre.jpg"),
     getSetting("emailSenderName", "L'équipe BOS & BOP"),
+    getSetting("emailPostalAddress", "BOS & BOP — Orientation scolaire et professionnelle, Toulouse, France"),
   ]);
   const [stripeKeyOk, stripeWebhookOk, publicOrigin, recaptchaSiteKey, recaptchaSecretOk] =
     await Promise.all([
@@ -67,6 +69,12 @@ export default async function SettingsPage({
   // pas laisser croire qu'un enregistrement depuis cette page a un effet.
   const stripeKeyLockedByEnv = !!process.env.STRIPE_SECRET_KEY;
   const stripeWebhookLockedByEnv = !!process.env.STRIPE_WEBHOOK_SECRET;
+  let mailDomain = "bos-bop.fr";
+  try {
+    mailDomain = new URL(siteUrl || "https://bos-bop.fr").hostname.replace(/^www\./, "");
+  } catch {
+    /* keep default */
+  }
 
   return (
     <>
@@ -307,12 +315,17 @@ export default async function SettingsPage({
             <input type="text" name="emailSenderName" defaultValue={emailSenderName} required />
           </label>
           <label className="champ">
-            URL du logo <span className="aide">(chemin relatif ou absolu)</span>
+            URL du logo <span className="aide">(JPEG ou PNG de préférence — le SVG est converti automatiquement pour les boîtes mail)</span>
             <input type="text" name="emailLogoUrl" defaultValue={emailLogoUrl} required />
           </label>
           <label className="champ">
             URL de l'avatar <span className="aide">(Affiche une photo de profil dans la signature)</span>
             <input type="text" name="emailAvatarUrl" defaultValue={emailAvatarUrl} />
+          </label>
+          <label className="champ">
+            Adresse postale dans le pied de page{" "}
+            <span className="aide">(recommandé anti-spam : nom, ville, pays)</span>
+            <input type="text" name="emailPostalAddress" defaultValue={emailPostalAddress} maxLength={300} />
           </label>
           <button type="submit" className="btn principal">
             Enregistrer le design
@@ -323,8 +336,16 @@ export default async function SettingsPage({
       <div className="panel">
         <h2>Serveur d'envoi d'emails (SMTP)</h2>
         <p className="subtitle">
-          Configuration requise pour envoyer automatiquement les liens de lecture des livres numériques (e-books) par email.
+          L&apos;adresse d&apos;envoi doit appartenir au domaine du site (ex. contact@bos-bop.fr), pas à Gmail ou Outlook.
+          Chez votre registrar, configurez <strong>SPF</strong>, <strong>DKIM</strong> et <strong>DMARC</strong> pour ce domaine — c&apos;est le levier n°1 contre le dossier spam.
         </p>
+        {smtpUser && isConsumerMailbox(smtpUser) && (
+          <div className="notice erreur">
+            L&apos;expéditeur <code className="slug">{smtpUser}</code> est une boîte grand public.
+            Les messages partiront très souvent en spam. Utilisez une adresse du type
+            contact@{mailDomain}.
+          </div>
+        )}
 
         <form action={saveSmtpSettingsAction}>
           <div className="grille-2">
